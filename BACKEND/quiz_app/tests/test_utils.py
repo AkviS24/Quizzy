@@ -67,6 +67,18 @@ class QuizValidationTest(SimpleTestCase):
         with self.assertRaises(ValueError):
             _validate_question(question)
 
+    def test_duplicate_options_are_rejected(self):
+        question = make_question()
+        question['question_options'] = [
+            'Programmiersprache',
+            'Programmiersprache',
+            'Browser',
+            'Betriebssystem',
+        ]
+
+        with self.assertRaises(ValueError):
+            _validate_question(question)
+
     def test_none_quiz_is_rejected(self):
         with self.assertRaises(ValueError):
             _validate_quiz(None)

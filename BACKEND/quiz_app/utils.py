@@ -68,6 +68,9 @@ def _validate_question(question):
     if not all(isinstance(option, str) and option.strip() for option in options):
         raise ValueError("Alle Antworten müssen Text enthalten.")
 
+    if len(set(options)) != len(options):
+        raise ValueError("Die Antwortoptionen müssen eindeutig sein.")
+
     answer = question.get('answer')
     if not isinstance(answer, str) or answer not in options:
         raise ValueError("Die richtige Antwort muss eine der Optionen sein.")
