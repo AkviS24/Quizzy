@@ -131,3 +131,32 @@ class QuizGenerationAPITests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_502_BAD_GATEWAY)
         self.assertNotIn("Interne technische Details", str(response.data))
         self.assertEqual(Quiz.objects.count(), 0)
+
+    @patch(
+        "quiz_app.functions._save_questions",
+        side_effect=RuntimeError("Simulierter Speicherfehler"),
+    )
+    @patch("quiz_app.utils.generate_quiz_from_transcript")
+    @patch("quiz_app.media_utils.transcribe_youtube_video")
+    def test_failed_question_save_rolls_back_quiz(
+        self,
+        mock_transcribe,
+        mock_generate,
+        mock_save_questions,
+    ):
+        mock_transcribe.return_value = (
+            "Testvideo",
+            "Ein Testtranskript.",
+        )
+        mock_generate.return_value = build_generated_quiz()
+
+        with self.assertRaises(RuntimeError):
+            from quiz_app.functions import create_quiz_from_youtube_url
+
+            create_quiz_from_youtube_url(
+                self.video_url,
+                self.user,
+            )
+
+        self.assertEqual(Quiz.objects.count(), 0)
+        self.assertEqual(QuizQuestion.objects.count(), 0)

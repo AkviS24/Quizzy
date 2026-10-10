@@ -1,5 +1,7 @@
 """Functions for creating quizzes from YouTube videos."""
 
+from django.db import transaction
+
 from . import media_utils, utils
 from .models import Quiz, QuizQuestion
 
@@ -21,6 +23,7 @@ def create_quiz_from_youtube_url(url, user):
     return _save_generated_quiz(url, user, generated_quiz)
 
 
+@transaction.atomic
 def _save_generated_quiz(url, user, generated_quiz):
     """Save a generated quiz and all its questions."""
     quiz = Quiz.objects.create(
