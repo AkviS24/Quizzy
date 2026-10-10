@@ -1,3 +1,7 @@
+from django.http import JsonResponse
+from django.middleware.csrf import get_token
+from django.views.decorators.csrf import ensure_csrf_cookie
+
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -12,7 +16,15 @@ from ..functions import (
     revoke_access_token,
     set_auth_cookies,
 )
+from ..authentication import enforce_csrf
 from .serializers import LoginSerializer, RegistrationSerializer
+
+
+@ensure_csrf_cookie
+def csrf_token_view(request):
+    """Return a CSRF token and ensure the browser receives its cookie."""
+    return JsonResponse({"csrfToken": get_token(request)})
+
 
 
 class RegistrationView(APIView):
@@ -35,6 +47,8 @@ class RegistrationView(APIView):
 
 class LoginView(APIView):
     def post(self, request):
+        enforce_csrf(request)
+
         serializer = LoginSerializer(data=request.data)
 
         if not serializer.is_valid():
@@ -65,9 +79,12 @@ class LoginView(APIView):
 
 class RefreshTokenView(APIView):
     def post(self, request):
-        refresh = get_refresh_token(
-            request.COOKIES.get('refresh_token'),
-        )
+        refresh_token = request.COOKIES.get("refresh_token")
+
+        if refresh_token:
+            enforce_csrf(request)
+
+        refresh = get_refresh_token(refresh_token)
 
         if refresh is None:
             return Response(
