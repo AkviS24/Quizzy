@@ -68,3 +68,20 @@ class LogoutTest(APITestCase):
             'access_token',
             response.cookies,
         )
+
+    def test_access_token_is_rejected_after_logout(self):
+        refresh = RefreshToken.for_user(self.user)
+        access = refresh.access_token
+
+        self.client.cookies['refresh_token'] = str(refresh)
+        self.client.cookies['access_token'] = str(access)
+
+        self.client.post('/api/logout/')
+        self.client.cookies['access_token'] = str(access)
+
+        response = self.client.get('/api/quizzes/')
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_401_UNAUTHORIZED,
+        )

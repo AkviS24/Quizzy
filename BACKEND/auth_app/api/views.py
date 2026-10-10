@@ -9,6 +9,7 @@ from ..functions import (
     create_refresh_token,
     delete_auth_cookies,
     get_refresh_token,
+    revoke_access_token,
     set_auth_cookies,
 )
 from .serializers import LoginSerializer, RegistrationSerializer
@@ -39,7 +40,7 @@ class LoginView(APIView):
         if not serializer.is_valid():
             return Response(
                 serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_401_UNAUTHORIZED,
             )
 
         user = serializer.validated_data["user"]
@@ -93,6 +94,8 @@ class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        revoke_access_token(request.auth)
+
         refresh_token = request.COOKIES.get("refresh_token")
 
         if refresh_token:

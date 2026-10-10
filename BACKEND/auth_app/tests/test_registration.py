@@ -50,3 +50,29 @@ class RegistrationTests(APITestCase):
             User.objects.count(),
             0,
         )
+
+    def test_registration_with_existing_email(self):
+        User.objects.create_user(
+            username='existing_user',
+            email='test@example.com',
+            password='Existingpassword123!',
+        )
+
+        response = self.client.post(
+            '/api/register/',
+            {
+                'username': 'new_user',
+                'email': 'TEST@example.com',
+                'password': 'NewPassword123!',
+                'confirmed_password': 'NewPassword123!',
+            },
+            format='json',
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertFalse(
+            User.objects.filter(username='new_user').exists()
+        )

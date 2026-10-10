@@ -13,6 +13,11 @@ class RegistrationSerializer(serializers.ModelSerializer):
             "password": {"write_only": True},
         }
 
+    def validate_email(self, value):
+        if User.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError("An account with this email already exists.")
+        return value
+
     def validate(self, attrs):
         if attrs["password"] != attrs["confirmed_password"]:
             raise serializers.ValidationError(
