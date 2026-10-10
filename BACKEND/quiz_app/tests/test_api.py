@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.contrib.auth.models import User
 from django.test import TestCase
 
@@ -41,64 +43,76 @@ class QuizListCreateViewTest(TestCase):
             status.HTTP_401_UNAUTHORIZED,
         )
 
-    def test_authenticated_user_can_create_quiz(self):
+    @patch('quiz_app.utils.generate_quiz_from_transcript')
+    @patch('quiz_app.media_utils.transcribe_youtube_video')
+    def test_authenticated_user_can_create_quiz(
+        self,
+        mock_transcribe,
+        mock_generate,
+    ):
         self.client.force_authenticate(user=self.user)
-
-        data = {
+        video_url = 'https://www.youtube.com/watch?v=test123'
+        mock_transcribe.return_value = ('Testvideo', 'Testtranskript')
+        mock_generate.return_value = {
             'title': 'Test Quiz',
             'description': 'Test description',
-            'video_url': 'https://www.youtube.com/watch?v=test123',
+            'questions': [
+                {
+                    'question_title': 'Question 1',
+                    'question_options': ['A', 'B', 'C', 'D'],
+                    'answer': 'A',
+                },
+            ],
         }
 
         response = self.client.post(
             self.url,
-            data,
+            {'url': video_url},
             format='json',
         )
 
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_201_CREATED,
-        )
-
-        self.assertEqual(
-            Quiz.objects.count(),
-            1,
-        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Quiz.objects.count(), 1)
 
         quiz = Quiz.objects.get()
-
         self.assertEqual(quiz.user, self.user)
         self.assertEqual(quiz.title, 'Test Quiz')
         self.assertEqual(quiz.description, 'Test description')
-        self.assertEqual(
-            quiz.video_url,
-            'https://www.youtube.com/watch?v=test123',
-        )
+        self.assertEqual(quiz.video_url, video_url)
 
-    def test_user_cannot_assign_quiz_to_another_user(self):
-        """Ensure the server assigns the quiz owner."""
+    @patch('quiz_app.utils.generate_quiz_from_transcript')
+    @patch('quiz_app.media_utils.transcribe_youtube_video')
+    def test_user_cannot_assign_quiz_to_another_user(
+        self,
+        mock_transcribe,
+        mock_generate,
+    ):
         other_user = User.objects.create_user(
             username='otheruser',
             password='Otherpassword123!',
         )
         self.client.force_authenticate(user=self.user)
+        video_url = 'https://www.youtube.com/watch?v=test123'
+        mock_transcribe.return_value = ('Testvideo', 'Testtranskript')
+        mock_generate.return_value = {
+            'title': 'Test Quiz',
+            'description': 'Test description',
+            'questions': [
+                {
+                    'question_title': 'Question 1',
+                    'question_options': ['A', 'B', 'C', 'D'],
+                    'answer': 'A',
+                },
+            ],
+        }
 
         response = self.client.post(
             self.url,
-            {
-                'title': 'Test Quiz',
-                'description': 'Test description',
-                'video_url': 'http://www.youtube.com/watch?v=test123',
-                'user': other_user.pk,
-            },
+            {'url': video_url, 'user': other_user.pk},
             format='json',
         )
 
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_201_CREATED,
-        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         quiz = Quiz.objects.get(title='Test Quiz')
         self.assertEqual(quiz.user, self.user)
         self.assertNotEqual(quiz.user, other_user)
