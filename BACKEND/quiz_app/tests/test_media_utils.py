@@ -21,7 +21,15 @@ class ValidateYouTubeURLTests(TestCase):
 
     def test_accepts_short_youtube_url(self):
         url = "https://youtu.be/dQw4w9WgXcQ"
-        self.assertEqual(validate_youtube_url(url), url)
+        expected = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        self.assertEqual(validate_youtube_url(url), expected)
+
+    def test_normalizes_youtube_shorts_url(self):
+        """Normalize Shorts URLs for the supplied frontend."""
+        url = "https://www.youtube.com/shorts/63ISYh7IV-s"
+        expected = "https://www.youtube.com/watch?v=63ISYh7IV-s"
+
+        self.assertEqual(validate_youtube_url(url), expected)
 
     def test_rejects_external_domain(self):
         with self.assertRaises(ValueError):

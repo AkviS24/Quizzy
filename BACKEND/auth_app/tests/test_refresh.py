@@ -27,7 +27,7 @@ class RefreshTokenTest(APITestCase):
 
         self.assertEqual(
             response.data['detail'],
-            'Token refreshed successfully!',
+            'Token refreshed',
         )
 
         self.assertIn(

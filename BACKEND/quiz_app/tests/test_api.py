@@ -116,6 +116,20 @@ class QuizListCreateViewTest(TestCase):
         self.assertEqual(quiz.user, self.user)
         self.assertNotEqual(quiz.user, other_user)
 
+    def test_quizzes_are_ordered_newest_first(self):
+        """Return newest quizzes before older ones."""
+        self.client.force_authenticate(user=self.user)
+        for title in ("Older Quiz", "Newer Quiz"):
+            Quiz.objects.create(
+                user=self.user, title=title, description=title,
+                video_url=f"https://www.youtube.com/watch?v={title.replace(' ', '').lower()}",
+            )
+        response = self.client.get(self.url)
+        self.assertEqual(
+            [quiz["title"] for quiz in response.data],
+            ["Newer Quiz", "Older Quiz"],
+        )
+
     def test_authenticated_user_can_list_own_quizzes(self):
         self.client.force_authenticate(user=self.user)
 

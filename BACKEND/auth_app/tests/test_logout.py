@@ -30,7 +30,7 @@ class LogoutTest(APITestCase):
 
         self.assertEqual(
             response.data['detail'],
-            'Logout successfully!',
+            'Log-Out successfully! All Tokens will be deleted. Refresh token is now invalid.',
         )
 
         self.assertEqual(

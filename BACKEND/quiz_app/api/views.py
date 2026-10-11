@@ -21,8 +21,10 @@ class QuizListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        """Return only quizzes owned by the current user."""
-        return Quiz.objects.filter(user=self.request.user)
+        """Return the user's quizzes, newest first."""
+        return Quiz.objects.filter(
+            user=self.request.user,
+        ).order_by("-created_at", "-pk")
 
     def create(self, request, *args, **kwargs):
         """Create a quiz from the submitted YouTube URL."""
@@ -39,7 +41,7 @@ class QuizListCreateView(generics.ListCreateAPIView):
         except QuizGenerationError:
             return Response(
                 {"detail": "Das Video konnte nicht verarbeitet werden."},
-                status=status.HTTP_502_BAD_GATEWAY,
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
         serializer = self.get_serializer(quiz)

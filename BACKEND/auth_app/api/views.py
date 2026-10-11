@@ -72,7 +72,7 @@ class RefreshTokenView(APIView):
             )
 
         response = Response(
-            {"detail": "Token refreshed successfully!"},
+            {"detail": "Token refreshed"},
             status=status.HTTP_200_OK,
         )
 
@@ -97,7 +97,12 @@ class LogoutView(APIView):
             blacklist_refresh_token(refresh_token)
 
         response = Response(
-            {"detail": "Logout successfully!"},
+            {
+                "detail": (
+                    "Log-Out successfully! All Tokens will be deleted. "
+                    "Refresh token is now invalid."
+                )
+            },
             status=status.HTTP_200_OK,
         )
 

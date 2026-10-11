@@ -2,6 +2,7 @@ asgiref==3.12.1
 autopep8==2.3.2
 coverage==7.16.2
 Django==6.1.1
+django-cors-headers==4.9.0
 djangorestframework==3.18.1
 djangorestframework_simplejwt==5.5.1
 flake8==7.4.1

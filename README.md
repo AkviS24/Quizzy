@@ -243,6 +243,24 @@ A successful login returns user information and sets HTTP-only access and refres
 
 The refresh token is read from the `refresh_token` cookie. On success, a new access token is set in the `access_token` cookie.
 
+#### Troubleshooting: Expired or invalid token
+
+The frontend normally attempts to refresh an expired access token automatically by calling `POST /api/token/refresh/`. If the refresh succeeds, the original request is retried.
+
+If authentication still fails with an error such as `Token is expired` or `token_not_valid`, the browser may be holding expired or revoked authentication cookies.
+
+For local development, recover the session as follows:
+
+1. Open the frontend in the browser.
+2. Open the browser developer tools with `F12`.
+3. Go to **Application** and select **Storage**.
+4. Use **Clear site data** to remove the stored data for the current frontend origin.
+5. Reload the login page and sign in again with the existing username and password.
+
+A successful login creates new HTTP-only `access_token` and `refresh_token` cookies. There is no need to register a new user.
+
+**Note:** Clearing site data signs you out and removes other stored data for that origin. Use this only as a troubleshooting step. A normal logout intentionally revokes the current tokens.
+
 #### Logout
 
 `POST /api/logout/`

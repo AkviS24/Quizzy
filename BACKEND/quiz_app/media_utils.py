@@ -4,7 +4,7 @@ import os
 import tempfile
 from functools import lru_cache
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 import whisper
 import yt_dlp
@@ -19,16 +19,34 @@ YOUTUBE_HOSTS = {
 }
 
 
+def _normalize_youtube_url(url, parsed_url):
+    """Convert supported YouTube video URLs to a standard watch URL."""
+    path_parts = parsed_url.path.strip("/").split("/")
+    video_id = parse_qs(parsed_url.query).get("v", [None])[0]
+
+    if parsed_url.hostname == "youtu.be" and path_parts[0]:
+        video_id = path_parts[0]
+    elif path_parts[0] in {"shorts", "embed", "live"} and len(path_parts) > 1:
+        video_id = path_parts[1]
+
+    if video_id:
+        return f"https://www.youtube.com/watch?v={video_id}"
+    return url.strip()
+
+
 def validate_youtube_url(url):
-    """Accept URLs from supported YouTube domains only."""
+    """Validate and normalize supported YouTube video URLs."""
     if not isinstance(url, str) or not url.strip():
         raise ValueError("Eine YouTube-URL ist erforderlich.")
+
     parsed_url = urlparse(url.strip())
-    if parsed_url.scheme not in {'http', 'https'}:
-        raise ValueError("Die URL mus HTTP oder HTTPS verwenden.")
+    if parsed_url.scheme not in {"http", "https"}:
+        raise ValueError("Die URL muss HTTP oder HTTPS verwenden.")
+
     if parsed_url.hostname not in YOUTUBE_HOSTS:
         raise ValueError("Es sind nur YouTube-URLs erlaubt.")
-    return url.strip()
+
+    return _normalize_youtube_url(url, parsed_url)
 
 
 def _build_download_options(output_dir):

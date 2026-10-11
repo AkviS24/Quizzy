@@ -104,7 +104,7 @@ class QuizGenerationAPITests(TestCase):
             format="json",
         )
 
-        self.assertEqual(response.status_code, status.HTTP_502_BAD_GATEWAY)
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
         self.assertNotIn("Interne technische Details", str(response.data))
         self.assertEqual(Quiz.objects.count(), 0)
 
@@ -128,7 +128,7 @@ class QuizGenerationAPITests(TestCase):
             format="json",
         )
 
-        self.assertEqual(response.status_code, status.HTTP_502_BAD_GATEWAY)
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
         self.assertNotIn("Interne technische Details", str(response.data))
         self.assertEqual(Quiz.objects.count(), 0)
 
