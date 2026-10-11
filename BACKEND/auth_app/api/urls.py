@@ -5,12 +5,10 @@ from .views import (
     LogoutView,
     RefreshTokenView,
     RegistrationView,
-    csrf_token_view,
 )
 
 
 urlpatterns = [
-    path("csrf/", csrf_token_view, name="csrf-token"),
     path("register/", RegistrationView.as_view(), name="register"),
     path("login/", LoginView.as_view(), name="login"),
     path("token/refresh/", RefreshTokenView.as_view(), name="token-refresh"),

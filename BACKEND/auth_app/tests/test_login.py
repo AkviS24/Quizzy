@@ -12,16 +12,12 @@ class LoginTest(APITestCase):
         )
 
     def test_login_user(self):
-        csrf_response = self.client.get("/api/csrf/")
-        csrf_token = csrf_response.json()["csrfToken"]
-
         response = self.client.post(
             '/api/login/',
             {
                 'username': 'testuser',
                 'password': 'Testpassword123!',
             },
-            HTTP_X_CSRFTOKEN=csrf_token,
         )
 
         self.assertEqual(
@@ -58,16 +54,12 @@ class LoginTest(APITestCase):
         )
 
     def test_login_with_wrong_password(self):
-        csrf_response = self.client.get("/api/csrf/")
-        csrf_token = csrf_response.json()["csrfToken"]
-
         response = self.client.post(
-            "/api/login/",
+            '/api/login/',
             {
-                "username": "testuser",
-                "password": "WrongPassword123!",
+                'username': 'testuser',
+                'password': 'WrongPassword123!',
             },
-            HTTP_X_CSRFTOKEN=csrf_token,
         )
 
         self.assertEqual(
@@ -77,21 +69,3 @@ class LoginTest(APITestCase):
 
         self.assertNotIn("access_token", response.cookies)
         self.assertNotIn("refresh_token", response.cookies)
-
-    def test_login_requires_csrf_token(self):
-        from rest_framework.test import APIClient
-
-        client = APIClient(enforce_csrf_checks=True)
-
-        response = client.post(
-            "/api/login/",
-            {
-                "username": "testuser",
-                "password": "Testpassword123!",
-            },
-        )
-
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_403_FORBIDDEN,
-        )

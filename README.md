@@ -21,7 +21,6 @@ The frontend communicates with the backend through its REST API.
 - JWT-based authentication using HTTP-only cookies for access and refresh tokens.
 - Access-token refresh using the refresh token cookie.
 - Logout with authentication-cookie deletion and token revocation.
-- CSRF protection for relevant cookie-authenticated requests.
 
 ### Quiz management
 - Create quizzes from YouTube video URLs.
@@ -201,7 +200,6 @@ All API endpoints are prefixed with `/api/`.
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/csrf/` | Obtain a CSRF token and ensure the CSRF cookie is set. |
 | `POST` | `/api/register/` | Register a user. |
 | `POST` | `/api/login/` | Authenticate a user and set authentication cookies. |
 | `POST` | `/api/token/refresh/` | Refresh the access token using the refresh-token cookie. |
@@ -237,7 +235,7 @@ Request body:
 }
 ```
 
-A successful login returns user information and sets HTTP-only access and refresh cookies. The login request is subject to CSRF validation.
+A successful login returns user information and sets HTTP-only access and refresh cookies.
 
 #### Token refresh
 
@@ -271,7 +269,7 @@ Request body:
 
 ```json
 {
-  "video_url": "https://www.youtube.com/watch?v=VIDEO_ID"
+  "url": "https://www.youtube.com/watch?v=VIDEO_ID"
 }
 ```
 
@@ -366,5 +364,4 @@ Tests cover authentication and token handling, registration validation, quiz API
 - Do not commit `.env` or other files containing credentials.
 - Keep `DEBUG=False` in production and configure `ALLOWED_HOSTS` appropriately before deployment.
 - Use HTTPS in production and configure secure cookie settings for the deployment environment.
-- Preserve CSRF protection for requests authenticated through cookies.
 - Keep dependencies and external tools up to date, while testing compatibility before changing pinned versions.
