@@ -2,12 +2,26 @@
 
 from django.db import transaction
 
+from rest_framework import status
+from rest_framework.response import Response
+
 from . import media_utils, utils
 from .models import Quiz, QuizQuestion
 
 
 class QuizGenerationError(Exception):
     """Raised when video processing or quiz generation fails."""
+
+
+def build_quiz_creation_error_response(error):
+    """Build an API response for URL or quiz-generation errors."""
+    if isinstance(error, ValueError):
+        detail = str(error)
+        response_status = status.HTTP_400_BAD_REQUEST
+    else:
+        detail = "Das Video konnte nicht verarbeitet werden."
+        response_status = status.HTTP_500_INTERNAL_SERVER_ERROR
+    return Response({"detail": detail}, status=response_status)
 
 
 def create_quiz_from_youtube_url(url, user):

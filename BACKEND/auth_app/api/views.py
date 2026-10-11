@@ -1,111 +1,78 @@
+"""API views for user authentication."""
+
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
 
 from ..functions import (
-    blacklist_refresh_token,
-    create_refresh_token,
+    build_login_response,
+    build_logout_response,
+    build_refresh_response,
     delete_auth_cookies,
     get_refresh_token,
-    revoke_access_token,
-    set_auth_cookies,
+    revoke_auth_tokens,
 )
 from .serializers import LoginSerializer, RegistrationSerializer
 
 
 class RegistrationView(APIView):
+    """Handle user registration."""
+
     def post(self, request):
+        """Register a user or return validation errors."""
         serializer = RegistrationSerializer(data=request.data)
-
-        if serializer.is_valid():
-            serializer.save()
+        if not serializer.is_valid():
             return Response(
-                {"detail": "User created successfully!"},
-                status=status.HTTP_201_CREATED,
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST,
             )
-
+        serializer.save()
         return Response(
-            serializer.errors,
-            status=status.HTTP_400_BAD_REQUEST,
+            {"detail": "User created successfully!"},
+            status=status.HTTP_201_CREATED,
         )
 
 
 class LoginView(APIView):
-    def post(self, request):
-        serializer = LoginSerializer(data=request.data)
+    """Handle user login."""
 
+    def post(self, request):
+        """Authenticate a user and set authentication cookies."""
+        serializer = LoginSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(
                 serializer.errors,
                 status=status.HTTP_401_UNAUTHORIZED,
             )
-
         user = serializer.validated_data["user"]
-        refresh = create_refresh_token(user)
-
-        response = Response(
-            {
-                "detail": "Login successfully!",
-                "user": {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
-                },
-            },
-            status=status.HTTP_200_OK,
-        )
-
-        set_auth_cookies(response, refresh)
-
-        return response
+        return build_login_response(user)
 
 
 class RefreshTokenView(APIView):
-    def post(self, request):
-        refresh = get_refresh_token(request.COOKIES.get("refresh_token"))
+    """Handle access-token refresh requests."""
 
+    def post(self, request):
+        """Refresh the access token using the refresh-token cookie."""
+        token_value = request.COOKIES.get("refresh_token")
+        refresh = get_refresh_token(token_value)
         if refresh is None:
             return Response(
                 {"detail": "Invalid refresh token."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
-
-        response = Response(
-            {"detail": "Token refreshed"},
-            status=status.HTTP_200_OK,
-        )
-
-        response.set_cookie(
-            "access_token",
-            str(refresh.access_token),
-            httponly=True,
-        )
-
-        return response
+        return build_refresh_response(refresh)
 
 
 class LogoutView(APIView):
+    """Handle secure user logout."""
+
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        revoke_access_token(request.auth)
-
+        """Revoke authentication tokens and clear their cookies."""
         refresh_token = request.COOKIES.get("refresh_token")
-
-        if refresh_token:
-            blacklist_refresh_token(refresh_token)
-
-        response = Response(
-            {
-                "detail": (
-                    "Log-Out successfully! All Tokens will be deleted. "
-                    "Refresh token is now invalid."
-                )
-            },
-            status=status.HTTP_200_OK,
-        )
-
+        revoke_auth_tokens(request.auth, refresh_token)
+        response = build_logout_response()
         delete_auth_cookies(response)
-
         return response

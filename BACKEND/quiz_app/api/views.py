@@ -7,6 +7,7 @@ from rest_framework.response import Response
 
 from ..functions import (
     QuizGenerationError,
+    build_quiz_creation_error_response,
     create_quiz_from_youtube_url,
 )
 from ..media_utils import validate_youtube_url
@@ -30,20 +31,9 @@ class QuizListCreateView(generics.ListCreateAPIView):
         """Create a quiz from the submitted YouTube URL."""
         try:
             url = validate_youtube_url(request.data.get("url"))
-        except ValueError as error:
-            return Response(
-                {"detail": str(error)},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        try:
             quiz = create_quiz_from_youtube_url(url, request.user)
-        except QuizGenerationError:
-            return Response(
-                {"detail": "Das Video konnte nicht verarbeitet werden."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
+        except (ValueError, QuizGenerationError) as error:
+            return build_quiz_creation_error_response(error)
         serializer = self.get_serializer(quiz)
         return Response(
             serializer.data,
