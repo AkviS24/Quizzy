@@ -3,7 +3,6 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 
-
 class LoginTest(APITestCase):
     def setUp(self):
         User.objects.create_user(

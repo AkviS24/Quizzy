@@ -29,7 +29,10 @@ load_dotenv()
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 if not SECRET_KEY:
-    raise ValueError("SECRET_KEY is missing in the .env file. Please set it before run application.")
+    raise ValueError(
+        "SECRET_KEY is missing in the .env file. "
+        "Please set it before run application."
+    )
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG') == 'True'

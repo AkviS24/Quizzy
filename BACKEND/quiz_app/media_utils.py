@@ -10,7 +10,6 @@ import whisper
 import yt_dlp
 
 
-
 YOUTUBE_HOSTS = {
     'youtube.com',
     'www.youtube.com',
@@ -18,6 +17,7 @@ YOUTUBE_HOSTS = {
     'music.youtube.com',
     'youtu.be',
 }
+
 
 def validate_youtube_url(url):
     """Accept URLs from supported YouTube domains only."""
@@ -29,6 +29,7 @@ def validate_youtube_url(url):
     if parsed_url.hostname not in YOUTUBE_HOSTS:
         raise ValueError("Es sind nur YouTube-URLs erlaubt.")
     return url.strip()
+
 
 def _build_download_options(output_dir):
     """Build yt-dlp options for MP3 audio extraction."""
@@ -43,6 +44,7 @@ def _build_download_options(output_dir):
             'preferredquality': '192',
         }],
     }
+
 
 def _download_audio(url, output_dir):
     """Download and convert a video's audio to MP3."""

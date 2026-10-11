@@ -24,6 +24,7 @@ def make_question():
         'answer': 'Programmiersprache',
     }
 
+
 def make_quiz():
     """Create a valid simple quiz."""
     return {
@@ -33,9 +34,9 @@ def make_quiz():
     }
 
 
-
 class QuizValidationTest(SimpleTestCase):
     """Test validation of generated quiz data."""
+
     def test_valid_quiz_is_accepted(self):
         _validate_quiz(make_quiz())
 
@@ -139,7 +140,6 @@ class QuizValidationTest(SimpleTestCase):
 
         with self.assertRaises(ValueError):
             _validate_quiz(quiz)
-
 
 
 class QuizGenerationTest(SimpleTestCase):

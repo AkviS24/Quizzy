@@ -4,7 +4,6 @@ from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
-
 class RefreshTokenTest(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(

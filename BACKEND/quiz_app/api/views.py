@@ -49,7 +49,6 @@ class QuizListCreateView(generics.ListCreateAPIView):
         )
 
 
-
 class QuizDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update and delete the user's quiz."""
 

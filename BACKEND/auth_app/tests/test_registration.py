@@ -3,7 +3,6 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 
-
 class RegistrationTests(APITestCase):
     def test_register_user(self):
         response = self.client.post(

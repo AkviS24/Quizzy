@@ -6,7 +6,6 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken
 
 from ..functions import (
     blacklist_refresh_token,
@@ -26,7 +25,6 @@ def csrf_token_view(request):
     return JsonResponse({"csrfToken": get_token(request)})
 
 
-
 class RegistrationView(APIView):
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
@@ -42,7 +40,6 @@ class RegistrationView(APIView):
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST,
         )
-
 
 
 class LoginView(APIView):
@@ -104,7 +101,6 @@ class RefreshTokenView(APIView):
         )
 
         return response
-
 
 
 class LogoutView(APIView):

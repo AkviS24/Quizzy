@@ -5,7 +5,6 @@ from rest_framework.test import APIClient, APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
-
 class LogoutTest(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(

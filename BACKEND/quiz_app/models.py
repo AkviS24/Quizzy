@@ -2,7 +2,6 @@ from django.contrib.auth.models import User
 from django.db import models
 
 
-
 class Quiz(models.Model):
     """Stores a quiz and its associated YouTube video."""
 
@@ -16,7 +15,6 @@ class Quiz(models.Model):
     video_url = models.URLField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
 
 
 class QuizQuestion(models.Model):

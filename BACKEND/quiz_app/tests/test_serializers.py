@@ -5,7 +5,6 @@ from quiz_app.api.serializers import QuizSerializer, QuizQuestionSerializer
 from quiz_app.models import Quiz, QuizQuestion
 
 
-
 class QuizQuestionSerializerTests(TestCase):
     """Tests validation and serialization of quiz questions."""
 
@@ -105,7 +104,6 @@ class QuizQuestionSerializerTests(TestCase):
 
         self.assertFalse(serializer.is_valid())
         self.assertIn('question_options', serializer.errors)
-
 
 
 class QuizSerializerTests(TestCase):

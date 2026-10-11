@@ -9,7 +9,6 @@ from rest_framework.test import APIClient
 from quiz_app.models import Quiz
 
 
-
 class QuizListCreateViewTest(TestCase):
     """Tests listing and creating quizzes."""
 
@@ -169,7 +168,6 @@ class QuizListCreateViewTest(TestCase):
             response.data[0]['title'],
             'Own Quiz',
         )
-
 
 
 class QuizDetailViewTest(TestCase):

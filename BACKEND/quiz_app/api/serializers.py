@@ -45,7 +45,6 @@ class QuizQuestionSerializer(serializers.ModelSerializer):
         return attrs
 
 
-
 class QuizSerializer(serializers.ModelSerializer):
     """Serialize quizzes including their associated questions."""
 

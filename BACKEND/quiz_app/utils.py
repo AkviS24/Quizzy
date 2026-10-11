@@ -76,7 +76,6 @@ def _validate_question(question):
         raise ValueError("Die richtige Antwort muss eine der Optionen sein.")
 
 
-
 def generate_quiz_from_transcript(transcript):
     """Generate and validate a quiz from a transcript."""
     if not isinstance(transcript, str) or not transcript.strip():

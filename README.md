@@ -1,250 +1,370 @@
+
 # Quizzy
 
-Quizzy is a web-based quiz application that allows users to create, manage and play quizzes.
+Quizzy is a web-based quiz application that enables users to generate, manage, and access quizzes based on YouTube videos. The backend provides a REST API for user authentication, automated quiz generation, and quiz management.
 
-The project consists of a separate backend and frontend. The backend provides a REST API and handles authentication, quiz management, quiz generation and the storage of quiz data.
-
-The frontend is provided as a separate repository by the Developer Akademie Backendkurs.
+The project consists of a Django backend and a separately maintained frontend provided by the Developer Akademie Backendkurs.
 
 ## Frontend
 
-The Quizzy frontend is available in the following repository:
+The frontend repository is available at:
 
 https://github.com/Developer-Akademie-Backendkurs/project.Quizly
 
-The frontend communicates with the Quizzy backend through the REST API.
+The frontend communicates with the backend through its REST API.
 
-## Installation
+## Features
 
-### Requirements
+### User authentication
+- User registration with username, email, password, and password confirmation.
+- User login with credential validation.
+- JWT-based authentication using HTTP-only cookies for access and refresh tokens.
+- Access-token refresh using the refresh token cookie.
+- Logout with authentication-cookie deletion and token revocation.
+- CSRF protection for relevant cookie-authenticated requests.
 
-Before installing Quizzy, make sure the following software is installed:
+### Quiz management
+- Create quizzes from YouTube video URLs.
+- Retrieve the authenticated user's quiz collection.
+- Retrieve an individual quiz, including its questions and answer options.
+- Update a quiz's title and description.
+- Delete quizzes.
+- Restrict quiz access and modifications to the quiz owner.
+- Store quiz questions and their answer options in the database.
 
-- Python 3.14+
-- FFmpeg
-- Git
-- Deno (JavaScript runtime required by the current yt-dlp setup)
+### Automatic quiz generation
+The backend processes YouTube videos and generates multiple-choice quizzes through the following pipeline:
 
-The backend uses a Python virtual environment to keep its dependencies isolated from the system installation.
+1. Retrieve video information and audio using `yt-dlp`.
+2. Extract and convert audio using FFmpeg.
+3. Transcribe the audio locally using OpenAI Whisper.
+4. Send the transcript to Google Gemini Flash for quiz generation.
+5. Validate the generated quiz data.
+6. Save the quiz and its questions to the database.
 
-### External tools
+Generated quizzes contain exactly 10 multiple-choice questions, each with four distinct answer options and one correct answer. The generated questions use the transcript's language, and the prompt instructs the model not to introduce facts unsupported by the transcript.
 
-#### FFmpeg
+### Django Admin
+The Django Admin interface supports managing quizzes and individual quiz questions, including searching and filtering records.
 
-FFmpeg is used to extract and convert audio from downloaded YouTube videos. It must be installed separately and available on the system `PATH`.
+## Technology Stack
 
-Verify the installation with:
-
-    ffmpeg -version
-
-#### Deno
-
-The current yt-dlp setup uses Deno to execute the JavaScript components required for YouTube extraction. Install Deno separately and ensure the executable is accessible to the backend process.
-
-Verify the installation with:
-
-    deno --version
-
-If Deno is installed but the command is not recognized, its installation directory must be added to the Windows `PATH`, or the backend must be configured with the full path to the executable.
-
-#### yt-dlp version note
-
-The project specification originally referenced yt-dlp version `2025.07.21`. That version failed during testing with the YouTube Short used for development. The newer development build currently pinned in `BACKEND/requirements.txt` successfully retrieved the video's title and extracted its audio.
-
-The currently tested version is `2026.9.27.232945.dev0`. This is an intentional, tested deviation from the original version reference. Development builds may change or become unavailable, so the pinned version should be re-evaluated before upgrading or deploying the application.
-
-### Clone the repository
-
-Clone the repository and navigate into the project directory:
-
-    git clone <repository-url>
-    cd Quizzy
-
-### Set up the backend
-
-Navigate to the backend directory:
-
-    cd BACKEND
-
-Create and activate the virtual environment:
-
-    python -m venv .venv
-    .venv\Scripts\activate
-
-Install the Python dependencies:
-
-    python -m pip install -r requirements.txt
-
-### Environment variables
-
-Create a `.env` file in the project root based on `.env.example`.
-
-The `.env` file contains local configuration and secret values and must not be committed to the repository.
-
-### Database
-
-Initialize the Django database:
-
-    python manage.py migrate
-
-### Start the development server
-
-Start the Django development server:
-
-    python manage.py runserver
-
-The backend is then available at:
-
-    http://127.0.0.1:8000/
+- **Python** — backend programming language
+- **Django** — web framework
+- **Django REST Framework** — REST API
+- **Django REST Framework Simple JWT** — JWT authentication and refresh-token handling
+- **SQLite** — default database
+- **yt-dlp** — YouTube video information and audio retrieval
+- **FFmpeg** — audio extraction and conversion
+- **OpenAI Whisper** — speech transcription
+- **PyTorch** — Whisper runtime
+- **Google Gemini API** — automatic quiz generation
+- **python-dotenv** — environment-variable configuration
+- **Deno** — JavaScript runtime used by the current yt-dlp setup
 
 ## Requirements
 
-The backend dependencies are listed in:
+Install the following software before setting up the backend:
 
-    BACKEND/requirements.txt
+- Python 3.14 or a compatible version for the pinned dependencies
+- Git
+- FFmpeg
+- Deno
 
-Install or update them with:
+A Google Gemini API key is required for automatic quiz generation.
 
-    python -m pip install -r requirements.txt
+The Python dependencies are listed in `BACKEND/requirements.txt`.
 
-The requirements file contains the Python dependencies. External programs such as FFmpeg and Deno must be installed separately.
+The project currently pins `yt-dlp[default]` to version `2026.9.27.232945.dev0`. This development build was selected after the originally referenced version, `2025.07.21`, failed during testing with the YouTube Short used for development. Development builds can change or become unavailable, so this dependency should be reviewed before upgrading or deploying the application.
 
-The media-processing dependencies currently include:
+The development environment uses CPU-based PyTorch. Whisper transcription therefore runs on the CPU in that environment.
 
-- `yt-dlp[default]` for retrieving YouTube video information and downloading audio
-- `openai-whisper` for local speech transcription
-- `torch` for running Whisper
-- FFmpeg for audio extraction and conversion
-- Deno for the JavaScript runtime required by the current yt-dlp setup
+## Installation
 
-The current development environment uses PyTorch `2.14.1+cpu`. CUDA is not available in this environment, so Whisper runs on the CPU. Transcription speed and quality depend on the selected Whisper model and the source audio.
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/AkviS24/Quizzy.git
+cd Quizzy
+```
+
+### 2. Set up the backend
+
+```bash
+cd BACKEND
+python -m venv .venv
+```
+
+Activate the virtual environment on Windows:
+
+```cmd
+.venv\Scripts\activate
+```
+
+Install the dependencies:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+### 3. Configure environment variables
+
+Create a `.env` file in the repository root, alongside the `BACKEND` directory, using `.env.example` as a template.
+
+Configure the following variables:
+
+```dotenv
+SECRET_KEY=your-secret-key-here
+DEBUG=True
+GEMINI_API_KEY=your-gemini-api-key-here
+```
+
+Replace the placeholder values with your own values. Use a private, securely generated Django secret key and a valid Gemini API key. Do not commit the real `.env` file or its secrets to version control.
+
+`SECRET_KEY` is required by Django. `DEBUG` controls Django's debug mode. `GEMINI_API_KEY` is required for Gemini-based quiz generation.
+
+### 4. Prepare the database
+
+From the `BACKEND` directory, with the virtual environment activated, run:
+
+```bash
+python manage.py migrate
+```
+
+### 5. Start the development server
+
+```bash
+python manage.py runserver
+```
+
+The backend development server is available at:
+
+http://127.0.0.1:8000/
+
+The Django Admin interface is available at:
+
+http://127.0.0.1:8000/admin/
+
+Create a Django superuser to access the administration interface:
+
+```bash
+python manage.py createsuperuser
+```
 
 ## Project Structure
 
-    Quizzy/
-    ├── BACKEND/
-    │   ├── .venv/
-    │   ├── manage.py
-    │   ├── requirements.txt
-    │   └── core/
-    │       ├── __init__.py
-    │       ├── settings.py
-    │       ├── urls.py
-    │       ├── asgi.py
-    │       └── wsgi.py
-    ├── FRONTEND/
-    ├── .env
-    ├── .env.example
-    ├── .gitignore
-    └── README.md
+```text
+Quizzy/
+├── BACKEND/
+│   ├── core/
+│   │   ├── settings.py
+│   │   ├── urls.py
+│   │   ├── asgi.py
+│   │   └── wsgi.py
+│   ├── auth_app/
+│   │   ├── api/
+│   │   │   ├── serializers.py
+│   │   │   ├── urls.py
+│   │   │   └── views.py
+│   │   ├── authentication.py
+│   │   ├── functions.py
+│   │   ├── models.py
+│   │   └── tests/
+│   ├── quiz_app/
+│   │   ├── api/
+│   │   │   ├── serializers.py
+│   │   │   ├── urls.py
+│   │   │   └── views.py
+│   │   ├── media_utils.py
+│   │   ├── functions.py
+│   │   ├── utils.py
+│   │   ├── models.py
+│   │   ├── admin.py
+│   │   └── tests/
+│   ├── manage.py
+│   ├── requirements.txt
+│   └── .venv/
+├── FRONTEND/
+├── .env
+├── .env.example
+├── .gitignore
+└── README.md
+```
 
-## Configuration
+The virtual environment and local `.env` file are local development files and should not be committed. The frontend is maintained separately from the backend source code.
 
-Quizzy uses environment variables for local configuration and sensitive values.
+## API Reference
 
-The following variables are currently required:
-
-    SECRET_KEY=your-secret-key-here
-    DEBUG=True
-
-The actual `.env` file is excluded from version control.
-
-Additional environment variables may be required when external services, such as Google Gemini, are integrated.
-
-## Planned Functionality
-
-- User registration
-- User login and logout
-- JWT token refresh
-- Quiz creation
-- Quiz overview
-- Quiz detail view
-- Quiz editing
-- Quiz deletion
-- Quiz playback
-- Automatic saving of quiz progress
-- Quiz evaluation and results
-- Sidebar with quizzes from today and the last 7 days
-- Quiz generation from YouTube videos
-- Automatic transcription using Whisper
-- Automatic question generation using Google Gemini Flash
-- Django Admin interface for managing quizzes and individual quiz questions
-- Legal pages
-
-## Quiz Generation
-
-The planned quiz generation pipeline consists of the following steps:
-
-1. A user provides a YouTube URL.
-2. The video information and audio are retrieved using `yt-dlp`.
-3. FFmpeg extracts and converts the audio into a format suitable for transcription.
-4. The audio is transcribed locally using OpenAI Whisper.
-5. The transcription is processed using Google Gemini Flash.
-6. Gemini generates a quiz containing 10 questions with 4 answer options each.
-7. The generated quiz is stored in the backend.
-
-The YouTube audio extraction and local Whisper transcription steps have been tested with a YouTube Short. The complete automatic quiz generation pipeline, including Gemini integration and end-to-end testing, still needs to be completed.
-
-## API
-
-The backend provides a REST API for communication with the frontend.
+All API endpoints are prefixed with `/api/`.
 
 ### Authentication
 
-The authentication API includes:
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/csrf/` | Obtain a CSRF token and ensure the CSRF cookie is set. |
+| `POST` | `/api/register/` | Register a user. |
+| `POST` | `/api/login/` | Authenticate a user and set authentication cookies. |
+| `POST` | `/api/token/refresh/` | Refresh the access token using the refresh-token cookie. |
+| `POST` | `/api/logout/` | Log out an authenticated user, revoke tokens, and clear authentication cookies. |
 
-- `POST /api/register/`
-- `POST /api/login/`
-- `POST /api/logout/`
-- `POST /api/token/refresh/`
+#### Registration
 
-Authentication uses JWT tokens. Access and refresh tokens are handled through HTTP-only cookies.
+`POST /api/register/`
+
+Request body:
+
+```json
+{
+  "username": "example_user",
+  "email": "user@example.com",
+  "password": "your-password",
+  "confirmed_password": "your-password"
+}
+```
+
+A successful registration returns HTTP `201 Created`. Invalid input, a duplicate email address, or mismatched passwords result in a validation error.
+
+#### Login
+
+`POST /api/login/`
+
+Request body:
+
+```json
+{
+  "username": "example_user",
+  "password": "your-password"
+}
+```
+
+A successful login returns user information and sets HTTP-only access and refresh cookies. The login request is subject to CSRF validation.
+
+#### Token refresh
+
+`POST /api/token/refresh/`
+
+The refresh token is read from the `refresh_token` cookie. On success, a new access token is set in the `access_token` cookie.
+
+#### Logout
+
+`POST /api/logout/`
+
+Requires an authenticated request. The backend revokes the access token, blacklists the refresh token when present, and deletes the authentication cookies.
 
 ### Quizzes
 
-The quiz API includes:
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/quizzes/` | Generate and create a quiz from a YouTube URL. |
+| `GET` | `/api/quizzes/` | Retrieve the authenticated user's quizzes. |
+| `GET` | `/api/quizzes/{id}/` | Retrieve a quiz, including its questions. |
+| `PATCH` | `/api/quizzes/{id}/` | Partially update a quiz's title and/or description. |
+| `DELETE` | `/api/quizzes/{id}/` | Delete a quiz. |
 
-- `POST /api/quizzes/`
-- `GET /api/quizzes/`
-- `GET /api/quizzes/{id}/`
-- `PATCH /api/quizzes/{id}/`
-- `DELETE /api/quizzes/{id}/`
+All quiz endpoints require authentication. Users can access and modify only their own quizzes. Requests for another user's quiz are denied; requests for a nonexistent quiz return a not-found response.
 
-## Technology
+#### Create a quiz
 
-The backend is built with:
+`POST /api/quizzes/`
 
-- Python
-- Django
-- Django REST Framework
-- yt-dlp
-- FFmpeg
-- OpenAI Whisper
-- PyTorch
-- Google Gemini Flash
-- Deno for the JavaScript runtime required by the current yt-dlp setup
+Request body:
 
-The frontend is provided separately and communicates with the backend through the REST API.
+```json
+{
+  "video_url": "https://www.youtube.com/watch?v=VIDEO_ID"
+}
+```
 
-## Development
+The backend retrieves and transcribes the video's audio, requests a quiz from Gemini, validates the generated data, and stores the quiz and its questions. If video processing or generation fails, the API returns an error response rather than saving an incomplete generated quiz.
 
-The project is developed incrementally with a focus on clean and maintainable code.
+#### Retrieve quizzes
 
-Changes should be organized into small, meaningful and thematically separated Git commits.
+`GET /api/quizzes/`
 
-Before committing changes, the project should be tested to ensure that the current development state remains functional.
+Returns the quizzes belonging to the authenticated user.
 
-The backend follows clean-code principles, including:
+`GET /api/quizzes/{id}/`
 
-- Functions should generally not exceed 14 lines.
-- Each function should perform one clearly defined task.
-- Use meaningful variable and function names.
-- Use `snake_case` for Python identifiers.
-- Remove unused variables and functions.
-- Remove commented-out code.
-- Add meaningful documentation and docstrings where appropriate.
-- Keep Django responsibilities in their appropriate files.
-- Keep views focused on handling HTTP requests and returning responses.
-- Use helper modules such as `functions.py` or `utils.py` for reusable functionality.
-- Maintain the Django Admin interface for managing quizzes and individual quiz questions.
-- Follow PEP 8 and Pythonic coding practices.
+Returns the selected quiz, including its associated questions, answer options, and correct answers.
+
+#### Update a quiz
+
+`PATCH /api/quizzes/{id}/`
+
+Only the title and description are editable through this endpoint. The associated video URL cannot be changed through the update operation.
+
+Example request:
+
+```json
+{
+  "title": "Updated quiz title",
+  "description": "Updated quiz description"
+}
+```
+
+#### Delete a quiz
+
+`DELETE /api/quizzes/{id}/`
+
+Deletes the selected quiz. Its associated questions are deleted through the model relationship.
+
+## Database Models
+
+### Quiz
+
+A quiz stores:
+
+- The owning user
+- The title and description
+- The source YouTube URL
+- Creation and update timestamps
+
+### QuizQuestion
+
+Each question belongs to a quiz and stores:
+
+- The question text
+- Four answer options
+- The correct answer
+- Creation and update timestamps
+
+Deleting a quiz also deletes its associated questions.
+
+## Development and Code Quality
+
+The backend follows the project's clean-code requirements:
+
+- Keep functions focused on one responsibility.
+- Keep functions to a maximum of 14 lines where required by the project guidelines.
+- Use descriptive names and `snake_case` for Python identifiers.
+- Remove unused code and commented-out code.
+- Provide meaningful docstrings and documentation.
+- Keep HTTP request and response handling in API views.
+- Place reusable business logic in helper modules such as `functions.py` and `utils.py`.
+- Follow PEP 8 and established Django conventions.
+- Keep quiz and question administration available through Django Admin.
+
+## Testing
+
+Run the backend test suite from the `BACKEND` directory with the virtual environment activated:
+
+```bash
+python manage.py test
+```
+
+Check the Django project configuration with:
+
+```bash
+python manage.py check
+```
+
+Tests cover authentication and token handling, registration validation, quiz API operations, ownership restrictions, and quiz data validation.
+
+## Configuration and Security Notes
+
+- Keep secret values in `.env`, not in source code.
+- Do not commit `.env` or other files containing credentials.
+- Keep `DEBUG=False` in production and configure `ALLOWED_HOSTS` appropriately before deployment.
+- Use HTTPS in production and configure secure cookie settings for the deployment environment.
+- Preserve CSRF protection for requests authenticated through cookies.
+- Keep dependencies and external tools up to date, while testing compatibility before changing pinned versions.
