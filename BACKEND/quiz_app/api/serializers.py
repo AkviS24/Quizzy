@@ -1,3 +1,5 @@
+"""Serializers for quiz data returned by the REST API."""
+
 from rest_framework import serializers
 
 from ..models import Quiz, QuizQuestion
@@ -7,6 +9,8 @@ class QuizQuestionSerializer(serializers.ModelSerializer):
     """Serializes quiz questions and validates their answer options."""
 
     class Meta:
+        """Declare the fields exposed for quiz questions."""
+
         model = QuizQuestion
         fields = [
             'id',
@@ -19,6 +23,7 @@ class QuizQuestionSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at']
 
     def validate_question_options(self, value):
+        """Require exactly four string answer options."""
         if len(value) != 4:
             raise serializers.ValidationError(
                 'A question must have exactly 4 options.',
@@ -32,7 +37,7 @@ class QuizQuestionSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
-        """The correct answer must be in the options."""
+        """Ensure the correct answer is among the provided options."""
         options = attrs.get('question_options')
         answer = attrs.get('answer')
 
@@ -60,6 +65,8 @@ class QuizSerializer(serializers.ModelSerializer):
         return fields
 
     class Meta:
+        """Declare the fields exposed for a quiz."""
+
         model = Quiz
         fields = [
             'id',

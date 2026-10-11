@@ -1,3 +1,5 @@
+"""JWT authentication using HTTP-only cookies."""
+
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
