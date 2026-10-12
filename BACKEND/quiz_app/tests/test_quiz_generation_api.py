@@ -31,6 +31,8 @@ class QuizGenerationAPITests(TestCase):
     """Test the documented YouTube-to-quiz API contract."""
 
     def setUp(self):
+        """Prepare the authenticated API client and test video."""
+
         self.client = APIClient()
         self.user = User.objects.create_user(
             username="quiz_creator",
@@ -41,6 +43,8 @@ class QuizGenerationAPITests(TestCase):
         self.client.force_authenticate(user=self.user)
 
     def test_invalid_youtube_url_returns_bad_request(self):
+        """Reject video URLs that do not belong to YouTube."""
+
         response = self.client.post(
             self.url,
             {"url": "https://example.com/video"},
@@ -55,6 +59,8 @@ class QuizGenerationAPITests(TestCase):
         mock_transcribe,
         mock_generate,
     ):
+        """Create a quiz with ten questions from a valid video URL."""
+
         mock_transcribe.return_value = ("Testvideo", "Ein Testtranskript.")
         mock_generate.return_value = build_generated_quiz()
 
@@ -76,6 +82,8 @@ class QuizGenerationAPITests(TestCase):
         mock_generate.assert_called_once_with("Ein Testtranskript.")
 
     def test_unauthenticated_user_cannot_generate_quiz(self):
+        """Reject quiz generation requests from unauthenticated users."""
+
         self.client.force_authenticate(user=None)
         response = self.client.post(
             self.url,
@@ -92,6 +100,8 @@ class QuizGenerationAPITests(TestCase):
         self,
         mock_transcribe,
     ):
+        """Verify transcription errors do not expose internal details."""
+
         from quiz_app.functions import QuizGenerationError
 
         mock_transcribe.side_effect = QuizGenerationError(
@@ -115,6 +125,8 @@ class QuizGenerationAPITests(TestCase):
         mock_transcribe,
         mock_generate,
     ):
+        """Verify quiz generation errors do not expose internal details."""
+
         from quiz_app.functions import QuizGenerationError
 
         mock_transcribe.return_value = ("Testvideo", "Testtranskript")
@@ -144,6 +156,8 @@ class QuizGenerationAPITests(TestCase):
         mock_generate,
         mock_save_questions,
     ):
+        """Ensure failed question storage rolls back the quiz creation."""
+
         mock_transcribe.return_value = (
             "Testvideo",
             "Ein Testtranskript.",

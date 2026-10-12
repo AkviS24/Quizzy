@@ -9,6 +9,8 @@ class QuizQuestionSerializerTests(TestCase):
     """Tests validation and serialization of quiz questions."""
 
     def setUp(self):
+        """Create a user and quiz for question serializer tests."""
+
         self.user = User.objects.create_user(
             username='testuser',
             password='Testpassword123!',
@@ -21,6 +23,8 @@ class QuizQuestionSerializerTests(TestCase):
         )
 
     def test_valid_question_options(self):
+        """Verify a question with four options is serialized correctly."""
+
         question = QuizQuestion(
             quiz=self.quiz,
             question_title='What is Python?',
@@ -41,6 +45,8 @@ class QuizQuestionSerializerTests(TestCase):
         )
 
     def test_valid_answer_is_accepted(self):
+        """Accept an answer that matches one of the available options."""
+
         data = {
             'question_title': 'What is Python?',
             'question_options': [
@@ -56,6 +62,8 @@ class QuizQuestionSerializerTests(TestCase):
         self.assertTrue(serializer.is_valid())
 
     def test_answer_not_in_options_is_rejected(self):
+        """Reject an answer that is not among the available options."""
+
         data = {
             'question_title': 'What is Python?',
             'question_options': [
@@ -73,6 +81,8 @@ class QuizQuestionSerializerTests(TestCase):
         self.assertIn('answer', serializer.errors)
 
     def test_question_options_require_four_items(self):
+        """Reject questions that do not provide exactly four options."""
+
         data = {
             'question_title': 'What is Python?',
             'question_options': [
@@ -89,6 +99,8 @@ class QuizQuestionSerializerTests(TestCase):
         self.assertIn('question_options', serializer.errors)
 
     def test_question_options_must_be_strings(self):
+        """Reject question options that are not strings."""
+
         data = {
             'question_title': 'What is Python?',
             'question_options': [
@@ -110,6 +122,8 @@ class QuizSerializerTests(TestCase):
     """Tests serialization of quizzes and their questions."""
 
     def setUp(self):
+        """Create a quiz with one question for serialization tests."""
+
         self.user = User.objects.create_user(
             username='testuser',
             password='Testpassword123!',
@@ -133,6 +147,8 @@ class QuizSerializerTests(TestCase):
         )
 
     def test_quiz_contains_questions(self):
+        """Verify serialized quiz data includes its questions."""
+
         serializer = QuizSerializer(self.quiz)
 
         self.assertEqual(

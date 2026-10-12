@@ -13,6 +13,8 @@ class QuizListCreateViewTest(TestCase):
     """Tests listing and creating quizzes."""
 
     def setUp(self):
+        """Prepare the API client and test user."""
+
         self.client = APIClient()
         self.user = User.objects.create_user(
             username='testuser',
@@ -21,7 +23,8 @@ class QuizListCreateViewTest(TestCase):
         self.url = '/api/quizzes/'
 
     def test_unauthenticated_user_cannot_list_quizzes(self):
-        """Ensure listing quizzes requires authentication."""
+        """Reject quiz-list requests from unauthenticated users."""
+
         response = self.client.get(self.url)
 
         self.assertEqual(
@@ -30,7 +33,8 @@ class QuizListCreateViewTest(TestCase):
         )
 
     def test_unauthenticated_user_cannot_create_quiz(self):
-        """Ensure creating a quiz requires authentication."""
+        """Reject quiz creation requests from unauthenticated users."""
+
         response = self.client.post(
             self.url,
             {},
@@ -49,6 +53,8 @@ class QuizListCreateViewTest(TestCase):
         mock_transcribe,
         mock_generate,
     ):
+        """Create a quiz for the authenticated user using mocked processing."""
+
         self.client.force_authenticate(user=self.user)
         video_url = 'https://www.youtube.com/watch?v=test123'
         mock_transcribe.return_value = ('Testvideo', 'Testtranskript')
@@ -86,6 +92,8 @@ class QuizListCreateViewTest(TestCase):
         mock_transcribe,
         mock_generate,
     ):
+        """Ensure client input cannot assign a quiz to another user."""
+
         other_user = User.objects.create_user(
             username='otheruser',
             password='Otherpassword123!',
@@ -118,6 +126,7 @@ class QuizListCreateViewTest(TestCase):
 
     def test_quizzes_are_ordered_newest_first(self):
         """Return newest quizzes before older ones."""
+
         self.client.force_authenticate(user=self.user)
         for title in ("Older Quiz", "Newer Quiz"):
             Quiz.objects.create(
@@ -131,6 +140,8 @@ class QuizListCreateViewTest(TestCase):
         )
 
     def test_authenticated_user_can_list_own_quizzes(self):
+        """Return quizzes owned by the authenticated user."""
+
         self.client.force_authenticate(user=self.user)
 
         Quiz.objects.create(
@@ -150,6 +161,8 @@ class QuizListCreateViewTest(TestCase):
         self.assertEqual(response.data[0]['title'], 'Own Quiz')
 
     def test_user_can_only_list_own_quizzes(self):
+        """Exclude quizzes owned by other users from the list response."""
+
         other_user = User.objects.create_user(
             username='otheruser',
             password='Otherpassword123!',
@@ -188,6 +201,8 @@ class QuizDetailViewTest(TestCase):
     """Test retrieving a single quiz."""
 
     def setUp(self):
+        """Create a user-owned quiz and its detail endpoint."""
+
         self.client = APIClient()
         self.user = User.objects.create_user(
             username='testuser',
@@ -203,6 +218,7 @@ class QuizDetailViewTest(TestCase):
 
     def test_unauthenticated_user_cannot_retrieve_quiz(self):
         """Ensure retrieving a quiz requires authentication."""
+
         response = self.client.get(self.url)
 
         self.assertEqual(
@@ -212,6 +228,7 @@ class QuizDetailViewTest(TestCase):
 
     def test_unauthenticated_user_cannot_update_or_delete_quiz(self):
         """Ensure updating and deleting a quiz requires authentication."""
+
         update_response = self.client.patch(
             self.url,
             {'title': 'Unauthorized update'},
@@ -235,6 +252,8 @@ class QuizDetailViewTest(TestCase):
         )
 
     def test_authenticated_user_can_retrieve_own_quiz(self):
+        """Return the details of a quiz owned by the authenticated user."""
+
         self.client.force_authenticate(user=self.user)
 
         response = self.client.get(self.url)
@@ -262,6 +281,7 @@ class QuizDetailViewTest(TestCase):
 
     def test_nonexistent_quiz_returns_not_found(self):
         """Ensure a nonexistent quiz returns a 404 response."""
+
         self.client.force_authenticate(user=self.user)
 
         response = self.client.get('/api/quizzes/9999999/')
@@ -272,6 +292,8 @@ class QuizDetailViewTest(TestCase):
         )
 
     def test_user_cannot_retrieve_another_users_quiz(self):
+        """Deny access to a quiz owned by another user."""
+
         other_user = User.objects.create_user(
             username='otheruser',
             password='Otheruserpassword123!',
@@ -295,6 +317,8 @@ class QuizDetailViewTest(TestCase):
         )
 
     def test_authenticated_user_can_update_own_quiz(self):
+        """Allow the owner to update the quiz title and description."""
+
         self.client.force_authenticate(user=self.user)
 
         data = {
@@ -330,6 +354,8 @@ class QuizDetailViewTest(TestCase):
         )
 
     def test_user_cannot_change_video_url(self):
+        """Ensure a quiz update cannot replace its original video URL."""
+
         self.client.force_authenticate(user=self.user)
         original_video_url = self.quiz.video_url
 
@@ -352,6 +378,8 @@ class QuizDetailViewTest(TestCase):
         )
 
     def test_user_cannot_update_another_users_quiz(self):
+        """Reject updates to quizzes owned by other users."""
+
         other_user = User.objects.create_user(
             username='otheruser',
             password='Otherpassword123!',
@@ -384,6 +412,8 @@ class QuizDetailViewTest(TestCase):
         )
 
     def test_authenticated_user_can_delete_own_quiz(self):
+        """Allow the owner to delete their quiz."""
+
         self.client.force_authenticate(user=self.user)
 
         response = self.client.delete(self.url)
@@ -397,6 +427,8 @@ class QuizDetailViewTest(TestCase):
         )
 
     def test_user_cannot_delete_another_users_quiz(self):
+        """Reject deletion attempts against another user's quiz."""
+
         other_user = User.objects.create_user(
             username='otheruser',
             password='Otherpassword123!',
