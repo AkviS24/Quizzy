@@ -1,5 +1,7 @@
 """Functions for creating quizzes from YouTube videos."""
 
+import logging
+
 from django.db import transaction
 
 from rest_framework import status
@@ -7,6 +9,8 @@ from rest_framework.response import Response
 
 from . import media_utils, utils
 from .models import Quiz, QuizQuestion
+
+logger = logging.getLogger(__name__)
 
 
 class QuizGenerationError(Exception):
@@ -30,6 +34,9 @@ def create_quiz_from_youtube_url(url, user):
         _, transcript = media_utils.transcribe_youtube_video(url)
         generated_quiz = utils.generate_quiz_from_transcript(transcript)
     except Exception as error:
+        logger.exception(
+            "Quiz-Erstellung fehlgeschlagen: Download, Whisper oder Gemini."
+        )
         raise QuizGenerationError(
             "Video processing or quiz generation failed."
         ) from error
