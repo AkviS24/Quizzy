@@ -5,6 +5,31 @@ Quizzy is a web-based quiz application that enables users to generate, manage, a
 
 The project consists of a Django backend and a separately maintained frontend provided by the Developer Akademie Backendkurs.
 
+## Table of Contents
+
+- [Frontend](#frontend)
+- [Features](#features)
+  - [User authentication](#user-authentication)
+  - [Quiz management](#quiz-management)
+  - [Automatic quiz generation](#automatic-quiz-generation)
+  - [Django Admin](#django-admin)
+- [Technology Stack](#technology-stack)
+- [Requirements](#requirements)
+- [Installation](#installation)
+  - [Clone the repository](#1-clone-the-repository)
+  - [Set up the backend](#2-set-up-the-backend)
+  - [Configure environment variables](#3-configure-environment-variables)
+  - [Prepare the database](#4-prepare-the-database)
+  - [Start the development server](#5-start-the-development-server)
+- [Project Structure](#project-structure)
+- [API Reference](#api-reference)
+  - [Authentication](#authentication)
+  - [Quizzes](#quizzes)
+- [Database Models](#database-models)
+- [Development and Code Quality](#development-and-code-quality)
+- [Testing](#testing)
+- [Configuration and Security Notes](#configuration-and-security-notes)
+
 ## Frontend
 
 The frontend repository is available at:
@@ -108,19 +133,19 @@ python -m pip install -r requirements.txt
 
 ### 3. Configure environment variables
 
-Create a `.env` file in the repository root, alongside the `BACKEND` directory, using `.env.example` as a template.
+From the `BACKEND` directory, copy the environment template to the repository root:
 
-Configure the following variables:
-
-```dotenv
-SECRET_KEY=your-secret-key-here
-DEBUG=True
-GEMINI_API_KEY=your-gemini-api-key-here
+```cmd
+copy ..\.env.example ..\.env
 ```
 
-Replace the placeholder values with your own values. Use a private, securely generated Django secret key and a valid Gemini API key. Do not commit the real `.env` file or its secrets to version control.
+Open the newly created `.env` file in the repository root and replace the placeholder values with your own credentials:
 
-`SECRET_KEY` is required by Django. `DEBUG` controls Django's debug mode. `GEMINI_API_KEY` is required for Gemini-based quiz generation.
+- `SECRET_KEY`: A securely generated Django secret key.
+- `GEMINI_API_KEY`: A valid Google Gemini API key.
+- `DEBUG=True`: Enables debug mode for local development.
+
+**Important:** Do not overwrite an existing `.env` file containing your actual credentials. Never commit `.env` or its secrets to version control.
 
 ### 4. Prepare the database
 
